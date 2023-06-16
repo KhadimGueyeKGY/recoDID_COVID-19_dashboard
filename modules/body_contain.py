@@ -1,12 +1,12 @@
 import dash
 from dash import Dash, dcc, html, Input, Output , dash_table, State
 import dash_bootstrap_components as dbc
-import plotly.express as px
-import geopandas as gpd
-import pandas as pd
-from datetime import datetime
-from modules.header import Header
-import json
+#import plotly.express as px
+#import geopandas as gpd
+#import pandas as pd
+#from datetime import datetime
+#from modules.header import Header
+#import json
 
 
 class Contain :

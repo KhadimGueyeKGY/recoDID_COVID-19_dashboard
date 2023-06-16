@@ -5,11 +5,22 @@ Created on Thu Feb  2 16:52:51 2023
 @author: khadim
 """
 
+'''
+favicon.ico pour l'icone 
+add comment lines
+
+genaral stattistcs 11, 12 , 116
+CohortDashbord 31 and 32
+main linge 95
+'''
+
+
 import dash
+#from flask
 from dash import Dash, dcc, html, Input, Output , dash_table, State, MATCH, dash_table
 import dash_bootstrap_components as dbc
-import plotly.express as px
-import geopandas as gpd
+#import plotly.express as px
+#import geopandas as gpd
 import pandas as pd
 from datetime import datetime
 from modules.header import Header
@@ -21,6 +32,9 @@ from modules.geo import geoM
 
 
 ##################  https://www.ebi.ac.uk/biosamples/download?count=100000&format=json (to download the biosamples metadata)
+df = pd.read_excel('assets/data/ReCoDID_EMCpilot_sampleIDs.xlsx', header=3, index_col= 'top-level accession', usecols=[col for col in range(22, 30) if col != 23])
+df = df.dropna(axis=0, how='all')
+
 with open('assets/data/samples.json', 'r') as f:
     json_data = f.read()
 data = json.loads(json_data)
@@ -28,7 +42,10 @@ data = json.loads(json_data)
 lt_id = []
 for i in range(len(data)):
             lt_id.append(data[i]['accession'])
-List_init= html.Div([html.P(html.A(lt_id[i],href='https://www.ebi.ac.uk/biosamples/samples/'+str(lt_id[i]) )) for i in range(len(lt_id))],style={'margin-left':'40px','font-size':'25px'})
+#List_init= html.Div([html.P(html.A(lt_id[i],href='https://www.ebi.ac.uk/biosamples/samples/'+str(lt_id[i]) )) for i in range(len(lt_id))],style={'margin-left':'40px','font-size':'25px'})
+
+# Top-level accession (150 samples)
+lt_id = [acc for acc in df.index]
 
 table_List_init = html.Div([ dash_table.DataTable(
     id='table',
@@ -59,7 +76,6 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],
                 meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, initial-scale=1.0'}]
                 )
-
 app.title = 'Cohort Dashboard'
 
 tabs = dbc.Tabs(
@@ -78,7 +94,7 @@ sarch = dbc.Input(id="search", placeholder="Search...", type="text",style={'font
 header = Header.header()
 
 app.layout = html.Div([
-    header,
+    #header,
     dcc.Location(id='url', refresh=False),
     html.Hr(),
     dbc.Row([
@@ -127,29 +143,11 @@ def contain():
 
 
 
-
-'''
-@app.callback(
-    [Output({'type': 'counter', 'index': MATCH}, 'children'),
-     Output({'type': 'more-info-button', 'index': MATCH}, 'children')],
-    [Input({'type': 'more-info-button', 'index': MATCH}, 'n_clicks')],
-    [State({'type': 'counter', 'index': MATCH}, 'children')]
-)
-def update_counter(n_clicks, current_count):
-    if n_clicks:
-        if int(current_count) == 0:
-            a = 1
-            return a, 'Less info'
-        else:
-            a = 0
-            return a, 'More info'
-    return current_count, 'More info' 
-'''
 #--------------- body cohort
 
 def body_cohort():
     res = html.Div([
-        CohortDashboard.cohortStudy(data),
+        CohortDashboard.cohortStudy(data,lt_id),
         html.Div([
             #html.Div([dbc.Input(id="search_2", placeholder="SAMEXXXX...", type="text",style={'margin': 'auto','width':'50%','font-size':'30px','text-align': 'center','align':'center','justify':'center'}),
             #          ] ,style = {'width':'100%','text-align': 'center'}),
@@ -157,14 +155,14 @@ def body_cohort():
                 dcc.Tabs(id='bc_tabs', value='bc_tab_1', children=[
                 dcc.Tab(label='Heatmap', value='bc_tab_1',style = {'font-size': '30px','font-weight': 'bold','text-align':'center'}),
                 dcc.Tab(label='Scatter Plot', value='bc_tab_2',style = {'font-size': '30px','font-weight': 'bold','text-align':'center'}),
+                dcc.Tab(label='Relationships', value='bc_tab_3',style = {'font-size': '30px','font-weight': 'bold','text-align':'center'}),
             ]),
             html.Div(id='bc_tabs_output')
         ], style={'margin-left':'100px','margin-top': '50px','margin-right':'100px','text-align':'center'})
     ])
     return res
 
-df = pd.read_excel('assets/data/ReCoDID_EMCpilot_sampleIDs.xlsx', header=3, index_col= 'top-level accession', usecols=[col for col in range(22, 30) if col != 23])
-df = df.dropna(axis=0, how='all')
+
 
 @app.callback(
         Output('bc_tabs_output', 'children'),
@@ -197,6 +195,11 @@ def render_content(tab): # search_2
                                 html.Div('data types = [ 1. antibody profile\n2. viral Seq\t3. B-cell\t4. T-cell\t5. Clin-Epi ]',style = {'font-size': '20px','text-align':'center','font-style': 'italic'}),
                                 dcc.Graph(figure=fig5), 
                         ],style={'width': '100%', 'text-align': 'center'})
+            elif tab == 'bc_tab_3':
+                 return html.Div([
+                      html.H3('Relationships',style = {'font-size': '30px','font-weight': 'bold','text-align':'center'}),
+                      General_Statistics.Relationships(data,lt_id)
+                 ])
             
 #-----------------------------------------------------------map
 
@@ -222,7 +225,8 @@ def map ():
     df_map = pd.DataFrame(df_map)
     fig = geoM.Choropleth_map(df_map)
     res = html.Div([
-            html.P('Map - test'),
+            html.H3('Geographical Distribution of Biosamples from the Multidisciplinary COVID-19 Study',style = {'font-size': '30px','font-weight': 'bold','text-align':'center'}),
+            html.H2('(Top-level BioSamples)',style = {'font-size': '20px','text-align':'center'}),
             dcc.Graph(figure=fig), 
           ])
      
@@ -262,7 +266,8 @@ def update_url(pathname):
 '''
 
 if __name__=='__main__':
-    app.run_server(debug=True, use_reloader=False, port=8050) # use_reloader=False
+    app.run_server(host='0.0.0.0', debug=True, use_reloader=False, port=8050) # use_reloader=False
+    #app.run_server(host="0.0.0.0", port=8050)
 
 
 

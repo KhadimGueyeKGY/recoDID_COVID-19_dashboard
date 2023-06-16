@@ -9,14 +9,14 @@ Created on Thu Feb  2 16:52:51 2023
 import dash
 from dash import Dash, dcc, html, Input, Output , dash_table, State, MATCH
 import dash_bootstrap_components as dbc
-import plotly.express as px
-import geopandas as gpd
-import pandas as pd
-from datetime import datetime
+#import plotly.express as px
+#import geopandas as gpd
+#import pandas as pd
+#from datetime import datetime
 from modules.general_statistics import General_Statistics
-import json
-import matplotlib
-matplotlib.use('Agg')
+#import json
+#import matplotlib
+#matplotlib.use('Agg')
 
 #app2 = dash.Dash(__name__)
 #name = name
@@ -25,12 +25,12 @@ matplotlib.use('Agg')
 class CohortDashboard:
     #--------------------general statistics
 
-    def general_statistics(data_gs):
-                fig1 = General_Statistics.gender(data_gs)
-                fig2_1,fig2_2 = General_Statistics.distribution_of_biosamples(data_gs)
+    def general_statistics(data_gs,lt_id):
+                fig1 = General_Statistics.gender(data_gs,lt_id)
+                fig2_1,fig2_2 = General_Statistics.distribution_of_biosamples(data_gs,lt_id)
                 #fig3 = General_Statistics.venn_diagram()
-                General_Statistics.upsetplot()
-                General_Statistics.venn_diagram()
+                #General_Statistics.upsetplot()
+                #General_Statistics.venn_diagram()
                 res= html.Div([
                         #html.Div([html.Img(src="assets/EMCpilotdataset_2.png",style={'width': '50%', 'text-align': 'center'})],style={'width': '100%', 'text-align': 'center'}), 
                         html.Div([
@@ -45,7 +45,9 @@ class CohortDashboard:
                                         dcc.Graph(figure=fig2_2)
                                         ],width=4,style = {'text-align':'center'}),
                                  dbc.Col([
-                                        html.Div('Distribution of samples by Gender',style = {'font-size': '30px','font-weight': 'bold','text-align':'center'}),
+                                        html.Div([html.Div('Distribution of samples by Gender'),
+                                                  #html.Br(),
+                                                html.Div( '(Top-level BioSamples)')],style = {'font-size': '30px','font-weight': 'bold','text-align':'center'}),
                                         dcc.Graph(figure=fig1)
                                         ],width=4,style = {'text-align':'right'}),
                                 ]),
@@ -73,7 +75,7 @@ class CohortDashboard:
                 return res
 
         
-    def cohortStudy(data):
+    def cohortStudy(data,lt_id):
         con = html.Div([
             html.Div([
             html.H1('Erasmus MC COVID-19 cohort-associated connected datasets study',style={'font-weight': 'bold','color':'#193F90','font-size': '65px'}),
@@ -216,7 +218,7 @@ class CohortDashboard:
         html.Hr(),
         #   general statistics 
 
-        CohortDashboard.general_statistics(data),
+        CohortDashboard.general_statistics(data,lt_id),
 
         #html.Hr(),
 

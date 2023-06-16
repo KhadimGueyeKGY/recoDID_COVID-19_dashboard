@@ -1,0 +1,5 @@
+dash
+dash_bootstrap_components
+dash-html-components
+pandas
+matplotlib
